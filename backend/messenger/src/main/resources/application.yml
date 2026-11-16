@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: messenger
+  datasource:
+    url: jdbc:postgresql://localhost:${DB_PORT:5431}/${DB_NAME:messenger}
+    username: ${DB_USER:Pedro}
+    password: ${DB_PASSWORD:messenger123}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # Hibernate NUNCA crea ni modifica tablas
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

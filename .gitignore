@@ -1,0 +1,9 @@
+.env
+node_modules/
+dist/
+out/
+target/
+.idea/
+.vscode/
+*.log
+notas.txt
