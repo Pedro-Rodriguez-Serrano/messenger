@@ -1,0 +1,207 @@
+openapi: 3.0.3
+info:
+  title: Messenger API
+  version: 1.0.0
+  description: API del módulo de identidad (registro, login y usuario actual).
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: auth
+    description: Registro y autenticación
+
+paths:
+  /api/v1/auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Crea una cuenta nueva y devuelve una sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Cuenta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Username o email ya en uso
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Inicia sesión con username o email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Credenciales incorrectas (no distingue usuario inexistente de contraseña errónea)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /api/v1/users/me:
+    get:
+      tags: [auth]
+      operationId: getCurrentUser
+      summary: Devuelve el usuario autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Token ausente, inválido o caducado
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ValidationError:
+      description: Datos de entrada inválidos
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [username, email, password, displayName]
+      properties:
+        username:
+          type: string
+          pattern: '^[a-z0-9_.]{3,30}$'
+          example: ana_92
+          description: Minúsculas, números, punto y guion bajo. No cambia después.
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: ana@mail.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: "~*Ana*~"
+
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          description: Username o email
+          example: ana_92
+        password:
+          type: string
+          format: password
+
+    AuthResponse:
+      type: object
+      required: [accessToken, tokenType, expiresIn, user]
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Segundos hasta que caduca el token
+          example: 900
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      required: [id, username, displayName, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+          description: Solo se devuelve al propio usuario
+        displayName:
+          type: string
+        personalMessage:
+          type: string
+          nullable: true
+          maxLength: 150
+        createdAt:
+          type: string
+          format: date-time
+
+    Problem:
+      type: object
+      description: Formato Problem Details (RFC 9457)
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: Validation failed
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+        errors:
+          type: array
+          description: Errores por campo (solo en validación)
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
