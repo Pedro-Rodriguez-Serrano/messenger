@@ -1,4 +1,4 @@
-package dev.pedro.messenger.identy.internal;
+package dev.pedro.messenger.identity.internal;
 
 import jakarta.validation.constraints.*;
 

@@ -1,4 +1,4 @@
-package dev.pedro.messenger.identy.internal;
+package dev.pedro.messenger.identity.internal;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -28,6 +28,14 @@ class ApiExceptionHandler {
                         "message", String.valueOf(e.getDefaultMessage())))
                 .toList();
         problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    ProblemDetail handleInvalidCredentials(InvalidCredentialsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");
+        problem.setTitle("Unauthorized");
         return problem;
     }
 }
