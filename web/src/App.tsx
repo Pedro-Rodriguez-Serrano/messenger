@@ -1,24 +1,17 @@
-import { useState } from 'react'
-import { authApi } from './api/auth'
-import { ApiError } from './api/http'
+import { Route, Routes } from 'react-router-dom'
+import { LoginPage } from './features/auth/LoginPage'
+import { ProtectedRoute } from './features/auth/ProtectedRoute'
+import { RegisterPage } from './features/auth/RegisterPage'
+import { HomePage } from './features/home/HomePage'
 
 export default function App() {
-  const [output, setOutput] = useState('Pulsa el botón')
-
-  async function probar() {
-    try {
-      const res = await authApi.login('ana_92', 'supersecreta1')
-      const me = await authApi.me(res.accessToken)
-      setOutput(JSON.stringify(me, null, 2))
-    } catch (e) {
-      setOutput(e instanceof ApiError ? `Error ${e.status}: ${e.message}` : String(e))
-    }
-  }
-
   return (
-    <div>
-      <button onClick={probar}>Probar login</button>
-      <pre>{output}</pre>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<HomePage />} />
+      </Route>
+    </Routes>
   )
 }
