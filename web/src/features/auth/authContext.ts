@@ -3,6 +3,7 @@ import type { RegisterInput, User } from '../../api/auth'
 
 export interface AuthState {
   user: User | null
+  token: string | null
   /** true mientras se comprueba si el token guardado sigue siendo válido */
   loading: boolean
   login: (identifier: string, password: string) => Promise<void>

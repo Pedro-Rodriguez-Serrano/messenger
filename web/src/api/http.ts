@@ -43,5 +43,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     const problem = await response.json().catch(() => null)
     throw new ApiError(response.status, problem)
   }
+
+  if (response.status === 204) return undefined as T
+  
   return response.json() as Promise<T>
 }
